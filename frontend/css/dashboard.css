@@ -1,0 +1,35 @@
+/* Flow diagram used on the Dataset transformation screen (spec 27) */
+.funnel{display:flex;flex-direction:column;gap:0}
+.funnel-step{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:9px 14px}
+.funnel-step .name{font-weight:600;font-size:.84rem}
+.funnel-step .note{background:none;border:0;padding:0;color:var(--faint);font-size:.75rem}
+.funnel-step .count{font-variant-numeric:tabular-nums;font-weight:700;font-size:.95rem}
+.funnel-step .delta{font-size:.75rem;color:var(--bad);min-width:64px;text-align:right}
+.funnel-step .delta.zero{color:var(--faint)}
+.funnel-arrow{height:14px;width:2px;background:var(--border);margin:0 auto}
+
+/* pipeline stepper */
+.stepper{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.stepper .step{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;
+  background:var(--surface-2);border:1px solid var(--border);font-size:.77rem;color:var(--muted)}
+.stepper .step.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.stepper .step.current{background:var(--brand-soft);color:var(--brand-dark);border-color:transparent;
+  font-weight:650}
+.stepper .step i{font-style:normal;font-weight:700}
+
+/* data-provenance banner (spec 14) */
+.provenance{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.provenance .prov{border-radius:var(--radius-sm);padding:11px 14px;border:1px solid var(--border)}
+.provenance .prov.real{background:var(--info-soft);border-color:transparent}
+.provenance .prov.synth{background:var(--synthetic-soft);border-color:transparent}
+.provenance .prov .t{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;opacity:.8}
+.provenance .prov .v{font-weight:700;font-size:.92rem}
+
+/* mapping table */
+.map-row{display:grid;grid-template-columns:1.1fr 1.4fr auto;gap:10px;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border)}
+.map-row:last-child{border-bottom:0}
+.map-row .fld{font-weight:600;font-size:.84rem}
+.map-row .fld small{display:block;font-weight:400;color:var(--faint);font-size:.72rem}

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RWTS Research Platform</title>
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">RW</div>
+      <div class="brand-text"><strong>RWTS Platform</strong><span>CS427 · research simulator</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Workflow</div>
+      <button data-page="home" class="active"><span class="dot"></span>Home</button>
+      <button data-page="dataset"><span class="dot"></span>Dataset</button>
+      <button data-page="transform"><span class="dot"></span>Transformation</button>
+      <button data-page="experiment"><span class="dot"></span>Experiment</button>
+      <button data-page="progress"><span class="dot"></span>Simulation</button>
+      <div class="nav-label">Analysis</div>
+      <button data-page="results"><span class="dot"></span>Results</button>
+      <button data-page="workers"><span class="dot"></span>Worker Reliability</button>
+      <button data-page="wrs"><span class="dot"></span>WRS Analysis</button>
+      <button data-page="comparison"><span class="dot"></span>Algorithm Comparison</button>
+      <div class="nav-label">Records</div>
+      <button data-page="history"><span class="dot"></span>Experiment History</button>
+      <button data-page="export"><span class="dot"></span>Export</button>
+      <button data-page="about"><span class="dot"></span>Method &amp; Assumptions</button>
+    </nav>
+    <div style="margin-top:18px" class="note">
+      Network data is <strong>real</strong>; worker reliability is
+      <strong>synthetic</strong>. See Method &amp; Assumptions.
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- ================= HOME ================= -->
+    <section class="page active" id="page-home">
+      <div class="page-head">
+        <div>
+          <h1>Reliability-Weighted Task Scheduling</h1>
+          <p>A research simulation platform for evaluating RWTS against the
+             reliability-agnostic LUCF/LRSTF baselines and an oracle benchmark,
+             on real mobile-social-network contact traces.</p>
+        </div>
+        <div class="row">
+          <button class="btn" id="home-refresh">Refresh</button>
+          <button class="btn primary" data-goto="dataset">Start with a dataset</button>
+        </div>
+      </div>
+
+      <div class="grid cols-4" id="home-stats"></div>
+      <div id="home-notices"></div>
+
+      <div class="card">
+        <div class="card-head"><h2>Data provenance</h2>
+          <span class="badge synthetic">methodological separation</span></div>
+        <div class="provenance">
+          <div class="prov real"><div class="t">Network data</div>
+            <div class="v">REAL / PROVIDED</div>
+            <div style="font-size:.78rem">Contacts, timestamps, inter-contact behaviour</div></div>
+          <div class="prov synth"><div class="t">Worker reliability</div>
+            <div class="v">SYNTHETIC / SIMULATED</div>
+            <div style="font-size:.78rem">No public MSN dataset records task outcomes</div></div>
+          <div class="prov"><div class="t">Scheduler knowledge</div>
+            <div class="v">ENFORCED PER ALGORITHM</div>
+            <div style="font-size:.78rem">LUCF/LRSTF: network only · RWTS: + WRS · Oracle: + truth</div></div>
+        </div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card"><div class="card-head"><h2>Workflow status</h2></div>
+          <div class="stepper" id="home-stepper"></div>
+          <div id="home-dataset"></div>
+        </div>
+        <div class="card"><div class="card-head"><h2>Last experiment</h2>
+          <button class="btn sm" data-goto="history">History</button></div>
+          <div id="home-last"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= DATASET ================= -->
+    <section class="page" id="page-dataset">
+      <div class="page-head">
+        <div><h1>Dataset</h1>
+          <p>Select an Excel workbook or contact trace, inspect it, map its columns
+             onto the canonical schema, then clean, transform and validate it.</p></div>
+      </div>
+      <div class="stepper" id="ds-stepper"></div>
+
+      <div class="card">
+        <div class="card-head"><h2>1 · Select dataset</h2>
+          <span class="badge" id="ds-formats"></span></div>
+        <div class="dropzone" id="dropzone">
+          <strong>Drop an .xlsx / .xls / .csv file here</strong>
+          <span>or click to browse — tab-separated CRAWDAD traces named “.xls” are also recognised</span>
+          <input type="file" id="file-input" hidden accept=".xlsx,.xls,.xlsm,.csv,.tsv,.txt,.dat">
+        </div>
+        <div class="row" style="margin-top:12px">
+          <select id="sample-select" style="max-width:280px"></select>
+          <button class="btn" id="btn-load-sample">Load bundled sample</button>
+          <div class="spacer"></div>
+          <select id="dataset-select" style="max-width:320px"></select>
+          <button class="btn" id="btn-open-dataset">Open</button>
+          <button class="btn danger sm" id="btn-delete-dataset">Delete</button>
+        </div>
+        <div id="upload-status" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card" id="card-workbook" style="display:none">
+        <div class="card-head"><h2>2 · Workbook inspection</h2>
+          <div class="row"><span class="badge" id="wb-format"></span>
+          <select id="sheet-select" style="max-width:220px"></select></div></div>
+        <div class="grid cols-4" id="wb-stats"></div>
+        <div style="margin-top:14px" class="grid cols-2">
+          <div><h3>Columns &amp; data types</h3><div class="table-wrap table-scroll"
+               id="wb-columns"></div></div>
+          <div><h3>Sample records</h3><div class="table-wrap table-scroll" id="wb-sample"></div></div>
+        </div>
+      </div>
+
+      <div class="card" id="card-mapping" style="display:none">
+        <div class="card-head"><h2>3 · Column mapping</h2>
+          <button class="btn sm" id="btn-resuggest">Re-suggest</button></div>
+        <div class="card-sub">Suggestions are based on name similarity and known trace
+          layouts. Nothing is hard-coded — change any row.</div>
+        <div id="mapping-rows"></div>
+      </div>
+
+      <div class="card" id="card-cleaning" style="display:none">
+        <div class="card-head"><h2>4 · Cleaning &amp; transformation rules</h2></div>
+        <div class="grid cols-3" id="cleaning-form"></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn primary" id="btn-prepare">Prepare Dataset</button>
+          <button class="btn" id="btn-save-config">Save dataset configuration</button>
+          <button class="btn" id="btn-load-config">Load configuration…</button>
+          <span id="prepare-status"></span>
+        </div>
+      </div>
+
+      <div class="card" id="card-prepared" style="display:none">
+        <div class="card-head"><h2>5 · Prepared dataset</h2>
+          <span class="badge ok">✓ Dataset successfully prepared</span></div>
+        <div class="tabs" id="prep-tabs">
+          <button data-tab="summary" class="active">Summary</button>
+          <button data-tab="quality">Data quality</button>
+          <button data-tab="workers">Worker summary</button>
+          <button data-tab="records">Processed records</button>
+        </div>
+        <div id="prep-summary"></div>
+        <div id="prep-quality" style="display:none"></div>
+        <div id="prep-workers" style="display:none"></div>
+        <div id="prep-records" style="display:none"></div>
+      </div>
+    </section>
+
+    <!-- ================= TRANSFORM ================= -->
+    <section class="page" id="page-transform">
+      <div class="page-head"><div><h1>Dataset transformation</h1>
+        <p>Record counts at every stage of the preparation pipeline, so the data
+           methodology stays transparent and reportable.</p></div></div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-head"><h2>Processing funnel</h2></div>
+          <div class="funnel" id="funnel"></div></div>
+        <div class="card"><div class="card-head"><h2>Validation report</h2></div>
+          <div id="validation-report"></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h2>Contact parameters (λ)</h2>
+        <span class="badge info">derived from real trace</span></div>
+        <div class="chart-box"><canvas id="chart-lambda"></canvas></div></div>
+    </section>
+
+    <!-- ================= EXPERIMENT ================= -->
+    <section class="page" id="page-experiment">
+      <div class="page-head">
+        <div><h1>Experiment configuration</h1>
+          <p>Every algorithm receives one common scenario per repetition: same
+             workers, same hidden reliability, same tasks, same contact events.</p></div>
+        <div class="row">
+          <button class="btn" id="btn-reset-config">Reset defaults</button>
+          <button class="btn primary" id="btn-run">Run Experiment</button>
+        </div>
+      </div>
+      <div id="exp-dataset-banner"></div>
+      <div class="grid cols-3">
+        <fieldset><legend>Scenario</legend><div id="cfg-scenario"></div></fieldset>
+        <fieldset><legend>Worker reliability (synthetic)</legend><div id="cfg-rel"></div></fieldset>
+        <fieldset><legend>WRS weights</legend><div id="cfg-wrs"></div></fieldset>
+      </div>
+      <fieldset><legend>Algorithms</legend><div class="grid cols-3" id="cfg-algos"></div></fieldset>
+      <details class="card fixed-settings">
+        <summary><strong>Fixed settings</strong>
+          <span class="card-sub">held constant in every experiment · see Method &amp; Assumptions</span></summary>
+        <div id="cfg-fixed" style="margin-top:12px"></div>
+      </details>
+    </section>
+
+    <!-- ================= PROGRESS ================= -->
+    <section class="page" id="page-progress">
+      <div class="page-head"><div><h1>Simulation progress</h1>
+        <p id="prog-subtitle">No experiment running.</p></div>
+        <div class="row"><button class="btn danger" id="btn-cancel">Cancel</button>
+        <button class="btn primary" id="btn-view-results">View results</button></div></div>
+      <div class="card"><div class="card-head"><h2 id="prog-title">—</h2>
+        <span class="badge" id="prog-status">idle</span></div>
+        <div id="prog-bars"></div>
+        <div class="grid cols-4" style="margin-top:14px" id="prog-stats"></div>
+        <div style="margin-top:12px" class="mono" id="prog-message"></div></div>
+      <div class="card"><div class="card-head"><h2>Run log</h2></div>
+        <div class="mono" id="prog-log" style="max-height:280px;overflow:auto"></div></div>
+    </section>
+
+    <!-- ================= RESULTS ================= -->
+    <section class="page" id="page-results">
+      <div class="page-head"><div><h1>Results dashboard</h1>
+        <p id="results-subtitle">Select an experiment from the history.</p></div>
+        <div class="row"><select id="results-exp-select" style="max-width:290px"></select>
+        <button class="btn" id="btn-reload-results">Reload</button></div></div>
+      <div class="grid cols-4" id="results-tiles"></div>
+      <div class="note" style="margin-bottom:16px">
+        The Oracle runs the expected-rework rule with perfect reliability knowledge —
+        it is an information benchmark, not a proven optimum. An approximation ratio
+        below 1 is therefore possible and means the binding constraint was the
+        heuristic form rather than the quality of the reliability estimate.
+      </div>
+      <div class="card"><div class="card-head"><h2>Algorithm comparison</h2>
+        <span class="badge">mean ± 95% CI over repetitions</span></div>
+        <div class="table-wrap"><div id="results-table"></div></div></div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-head"><h3>CMS — total weighted completion time</h3></div>
+          <div class="chart-box"><canvas id="chart-cms"></canvas></div></div>
+        <div class="card"><div class="card-head"><h3>TMS — maximum completion time</h3></div>
+          <div class="chart-box"><canvas id="chart-tms"></canvas></div></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-head"><h3>Empirical approximation ratio vs Oracle</h3></div>
+          <div class="chart-box"><canvas id="chart-ratio"></canvas></div></div>
+        <div class="card"><div class="card-head"><h3>Rework &amp; failure rates</h3></div>
+          <div class="chart-box"><canvas id="chart-rates"></canvas></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h2>Paired significance tests</h2>
+        <span class="badge info">RWTS vs baselines, common random numbers</span></div>
+        <div class="table-wrap"><div id="results-significance"></div></div></div>
+    </section>
+
+    <!-- ================= WORKERS ================= -->
+    <section class="page" id="page-workers">
+      <div class="page-head"><div><h1>Worker reliability dashboard</h1>
+        <p>The simulated worker population for repetition 1 of the selected experiment.</p></div>
+        <div class="row"><select id="workers-algo-select" style="max-width:220px"></select></div></div>
+      <div class="note synthetic" style="margin-bottom:14px">
+        <strong>True Reliability = ground truth used only by the simulator.</strong>
+        It is never visible to LUCF, LRSTF or either RWTS variant; only the Oracle
+        benchmark is given it.</div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-head"><h3>Reliability distribution</h3></div>
+          <div class="chart-box"><canvas id="chart-rel-hist"></canvas></div></div>
+        <div class="card"><div class="card-head"><h3>Utilisation vs reliability</h3></div>
+          <div class="chart-box"><canvas id="chart-util"></canvas></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h2>Worker population</h2></div>
+        <div class="table-wrap table-scroll"><div id="workers-table"></div></div></div>
+    </section>
+
+    <!-- ================= WRS ================= -->
+    <section class="page" id="page-wrs">
+      <div class="page-head"><div><h1>WRS analysis</h1>
+        <p>Does the estimator converge toward true reliability as history accumulates?</p></div>
+        <div class="row"><select id="wrs-algo-select" style="max-width:220px"></select></div></div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-head"><h3>True reliability vs WRS</h3></div>
+          <div class="chart-box"><canvas id="chart-scatter"></canvas></div>
+          <div id="wrs-fit" class="mono" style="margin-top:8px"></div></div>
+        <div class="card"><div class="card-head"><h3>Estimation error (true − WRS)</h3></div>
+          <div class="chart-box"><canvas id="chart-error"></canvas></div></div>
+      </div>
+      <div class="card"><div class="card-head"><h3>WRS convergence</h3>
+        <span class="badge">mean absolute error vs observed task count</span></div>
+        <div class="chart-box tall"><canvas id="chart-convergence"></canvas></div></div>
+    </section>
+
+    <!-- ================= COMPARISON ================= -->
+    <section class="page" id="page-comparison">
+      <div class="page-head"><div><h1>Algorithm comparison</h1>
+        <p>Every recorded metric, filterable by algorithm and experimental condition.</p></div></div>
+      <div class="card"><div class="row">
+        <div class="field" style="min-width:220px"><label>Condition</label>
+          <select id="cmp-condition"></select></div>
+        <div class="field" style="min-width:220px"><label>Metric</label>
+          <select id="cmp-metric"></select></div>
+        <div class="field" style="min-width:220px"><label>Algorithms</label>
+          <div id="cmp-algos" class="row"></div></div>
+      </div></div>
+      <div class="card"><div class="chart-box tall"><canvas id="chart-cmp"></canvas></div></div>
+      <div class="grid cols-2" id="cmp-small-multiples"></div>
+    </section>
+
+    <!-- ================= HISTORY ================= -->
+    <section class="page" id="page-history">
+      <div class="page-head"><div><h1>Experiment history</h1>
+        <p>Every experiment, its configuration fingerprint and its outcome.</p></div>
+        <button class="btn" id="btn-reload-history">Reload</button></div>
+      <div class="card"><div class="table-wrap"><div id="history-table"></div></div></div>
+    </section>
+
+    <!-- ================= EXPORT ================= -->
+    <section class="page" id="page-export">
+      <div class="page-head"><div><h1>Export</h1>
+        <p>Everything needed to reproduce and report the experiment.</p></div>
+        <select id="export-exp-select" style="max-width:290px"></select></div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-head"><h2>Experiment artefacts</h2></div>
+          <div class="row" id="export-buttons"></div></div>
+        <div class="card"><div class="card-head"><h2>Processed dataset</h2></div>
+          <div class="row" id="export-dataset-buttons"></div>
+          <div class="note" style="margin-top:10px">The raw upload is never modified.</div></div>
+      </div>
+      <div class="card"><div class="card-head"><h2>Research summary preview</h2></div>
+        <pre class="mono" id="export-preview" style="white-space:pre-wrap"></pre></div>
+    </section>
+
+    <!-- ================= ABOUT ================= -->
+    <section class="page" id="page-about">
+      <div class="page-head"><div><h1>Method &amp; assumptions</h1>
+        <p>What follows the proposal, and what is an implementation choice made
+           here and left configurable.</p></div></div>
+      <div id="about-content"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop"><div class="modal" id="modal"></div></div>
+<div class="toasts" id="toasts"></div>
+
+<script src="assets/chart.umd.js"></script>
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/dataset.js"></script>
+<script src="js/experiment.js"></script>
+<script src="js/results.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

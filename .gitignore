@@ -1,0 +1,13 @@
+# Python environment and caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local experiment data (keeps the .gitkeep placeholders)
+backend/storage/**/*
+!backend/storage/*/
+!backend/storage/*/.gitkeep
+
+# Stray files
+backend/(3
