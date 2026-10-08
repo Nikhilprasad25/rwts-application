@@ -1,4 +1,4 @@
-# RWTS — Reliability-Weighted Task Scheduling
+# RWTS - Reliability-Weighted Task Scheduling
 ### Research simulation platform · CS427 project
 
 A local web application for evaluating **Reliability-Weighted Task Scheduling (RWTS)**
